@@ -73,11 +73,11 @@ setClass("HasBaseAccessors")
 setClass("PacBioBasH5", contains = c("PacBioDataFile", "HasBaseAccessors"), 
          representation = representation(
            baseEvents = "data.frame",
-           baseCallsG = "H5ObjOrNull",
-           ccsBaseEvents = "data.frame",
-           ccsBaseCallsG = "H5ObjOrNull"),
-         prototype = prototype(baseEvents = NULL, baseCallsG = NULL,
-           ccsBaseEvents = NULL, ccsBaseCallsG = NULL))
+           baseCallsG = "H5ObjOrNull"),
+         prototype = prototype(baseEvents = NULL, baseCallsG = NULL))
+
+## this will just overwrite the initialization of the groups.
+setClass("PacBioCcsH5", contains = c("PacBioBasH5"))
 
 setClass("PacBioPlsH5", contains = c("PacBioBasH5"),
          representation = representation(
@@ -183,9 +183,16 @@ setGeneric("getBaseDataset", function(h5Obj, ...) {
 setGeneric("getPulseDataset", function(h5Obj, ...) {
   standardGeneric("getPulseDataset")
 })
+
+## XXX : ?refactor
 setGeneric("getCCSDataset", function(h5Obj, ...) {
   standardGeneric("getCCSDataset")
 })
+
+setGeneric("getNumPasses", function(h5Obj, ...) {
+  standardGeneric("getNumPasses")
+})
+
 
 ## XXX : possibly need a check here to see if you have been called
 ## without file.
@@ -691,23 +698,29 @@ setMethod("getMovieName", "MultiPart", function(h5Obj) {
   list(events = bcZMW, group = baseCalls)
 }
 
+
 setMethod("initialize", "PacBioBasH5", function(.Object, fileName = NULL) {
   .Object <- callNextMethod(.Object, fileName = fileName)
 
-  l <- .initBasEvents(.Object, "PulseData/BaseCalls")
-  .Object@baseEvents  <- l$events
-  .Object@baseCallsG  <- l$group
-  
-  if (h5GroupExists(.Object, "PulseData/ConsensusBaseCalls")) {
-    ## XXX : These should always be there, but old files might not
-    ## have them - really I'm just delaying the breaking to the call
-    ## which needs them.
-    l <- .initBasEvents(.Object, "PulseData/ConsensusBaseCalls")
-    .Object@ccsBaseEvents  <- l$events
-    .Object@ccsBaseCallsG  <- l$group
-  }
+  if (h5GroupExists(.Object, "PulseData/BaseCalls")) {
+      l <- .initBasEvents(.Object, "PulseData/BaseCalls")
+      .Object@baseEvents  <- l$events
+      .Object@baseCallsG  <- l$group
+  }  
   return(.Object)
 })
+
+setMethod("initialize", "PacBioCcsH5", function(.Object, fileName = NULL) {
+    .Object <- callNextMethod(.Object, fileName = fileName)
+
+    if (h5GroupExists(.Object, "PulseData/ConsensusBaseCalls")) {
+        l <- .initBasEvents(.Object, "PulseData/ConsensusBaseCalls")
+        .Object@baseEvents  <- l$events
+        .Object@baseCallsG  <- l$group
+    }
+    return(.Object)
+})
+
 
 isMultiPart <- function(fileName) {
   h5GroupExists(H5File(fileName), 'MultiPart')
@@ -720,7 +733,8 @@ parts <- function(multiPart) {
   multiPart@parts
 }
 
-.MultiPart <- function(fileName, klassName = c("PacBioBasH5", "PacBioPlsH5")) {
+.MultiPart <- function(fileName, klassName = c("PacBioBasH5", "PacBioPlsH5",
+                                     "PacBioCcsH5")) {
   .Object <- new("MultiPart", fileName = fileName)
   .Object@backingClass = match.arg(klassName)
 
@@ -754,6 +768,16 @@ PacBioBasH5 <- function(fileName) {
     new("PacBioBasH5", fileName = fileName)
   }
 }
+
+PacBioCcsH5 <- function(fileName) {
+  if (isMultiPart(fileName)) {
+    .MultiPart(fileName, "PacBioCcsH5")
+  }
+  else {
+      new("PacBioCcsH5", fileName = fileName)
+  }
+}
+    
 
 ## #############################################################################
 ##
@@ -790,6 +814,7 @@ setMethod("getBaseEvents", "MultiPart", function(h5Obj) {
   do.call(rbind, lapply(parts(h5Obj), getBaseEvents))
 })
 
+## XXX ?? Refactor with new CCS h5? 
 setGeneric("getCCSEvents", function(h5Obj, ...) {
   standardGeneric("getCCSEvents")
 })

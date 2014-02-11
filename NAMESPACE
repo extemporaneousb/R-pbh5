@@ -8,6 +8,7 @@ exportClasses(PacBioDataFile,
               PacBioCmpH5,
               PacBioBasH5,
               PacBioPlsH5,
+              PacBioCcsH5, 
               PacBioTrcH5, # need to update this in the face of the multipart.
               PacBioAlnH5) # probably should get rid of this.
 
@@ -25,7 +26,6 @@ export(getReadLength,
        getAdvanceTime,
        getTemplateSpan,
        getPolymerizationRate,
-       getNumPasses,
        getLocalPolymerizationRate,
        doWithPlsAndCmp,
        getChannelToBaseMap,
@@ -137,7 +137,8 @@ export(getReadLength,
        getEdna,
        getHoleStatus,
        getHoleXY,
-       getReadType)
+       getReadType,
+       PacBioCcsH5)
 
        
 
@@ -168,4 +169,5 @@ exportMethods(getSNR,
               getReadScore,
               getHoleNumbers,
               getBaselineSigma,
-              getBaselineLevel)
+              getBaselineLevel,
+              getNumPasses)

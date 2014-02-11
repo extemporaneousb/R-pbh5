@@ -122,10 +122,10 @@ getLocalPolymerizationRate <- function(cmpH5, idx = seq.int(1, nrow(cmpH5)),
   }, alns, stimes, SIMPLIFY = FALSE)
 }
 
-getNumPasses <- function(cmpH5, idx = 1:nrow(cmpH5)) {
-  stopifnot(h5DatasetExists(cmpH5, "AlnInfo/NumPasses"))
-  getH5Dataset(cmpH5, "AlnInfo/NumPasses")[idx]
-}
+setMethod("getNumPasses", "PacBioCmpH5", function(h5Obj, idx = 1:nrow(h5Obj)) {
+    stopifnot(h5DatasetExists(h5Obj, "AlnInfo/NumPasses"))
+    getH5Dataset(h5Obj, "AlnInfo/NumPasses")[idx]
+})
 
 #############################################################################
 ##

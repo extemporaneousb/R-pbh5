@@ -46,6 +46,11 @@ setGeneric("getBaselineLevel", function(h5Obj, ...) {
   standardGeneric("getBaselineLevel")
 })
 
+setMethod("getNumPasses", "PacBioCcsH5", function(h5Obj, holeNumbers = getHoleNumbers(h5Obj)) {
+    ## XXX : These long strings in here aren't great, should store prefix in object.
+    .getHoleDataset(h5Obj, "PulseData/ConsensusBaseCalls/Passes/NumPasses", holeNumbers)
+})
+
 setMethod("getRegionsTable", "PacBioBasH5", function(h5Obj) {
   tbl           <- getH5Dataset(h5Obj, "PulseData/Regions")
   regionTypes   <- getH5Attribute(tbl, "RegionTypes")[]
