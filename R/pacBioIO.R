@@ -698,11 +698,11 @@ setMethod("getMovieName", "MultiPart", function(h5Obj) {
   list(events = bcZMW, group = baseCalls)
 }
 
-
 setMethod("initialize", "PacBioBasH5", function(.Object, fileName = NULL) {
   .Object <- callNextMethod(.Object, fileName = fileName)
 
-  if (h5GroupExists(.Object, "PulseData/BaseCalls")) {
+  ### XXX: Recent bug, where ccs.h5 files contain empty BaseCalls groups.
+  if (h5GroupExists(.Object, "PulseData/BaseCalls/ZMW")) {
       l <- .initBasEvents(.Object, "PulseData/BaseCalls")
       .Object@baseEvents  <- l$events
       .Object@baseCallsG  <- l$group
@@ -712,12 +712,13 @@ setMethod("initialize", "PacBioBasH5", function(.Object, fileName = NULL) {
 
 setMethod("initialize", "PacBioCcsH5", function(.Object, fileName = NULL) {
     .Object <- callNextMethod(.Object, fileName = fileName)
-
+    
     if (h5GroupExists(.Object, "PulseData/ConsensusBaseCalls")) {
         l <- .initBasEvents(.Object, "PulseData/ConsensusBaseCalls")
         .Object@baseEvents  <- l$events
         .Object@baseCallsG  <- l$group
     }
+    
     return(.Object)
 })
 
